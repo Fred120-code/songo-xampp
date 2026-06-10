@@ -4,16 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Songo — Multijoueur PHP</title>
-    <link rel="stylesheet" href="songo.css">
+    <link rel="stylesheet" href="songo.css" />
     <script src="songo.js"></script>
-    
   </head>
   <body>
     <header>
       <h1>Songo</h1>
-      <p>Jeu de semailles Ekang — multijoueur PHP</p>
     </header>
     <div id="container">
+      <!-- Interface d'entree -->
       <div id="lobby">
         <h2>Rejoindre ou créer une partie</h2>
         <div class="lsec">
@@ -65,7 +64,9 @@
           />
         </div>
       </div>
+
       <div id="game">
+        <!-- interface de fin -->
         <div id="end-screen">
           <h2 id="end-title">Fin de partie</h2>
           <p id="end-sub"></p>
@@ -77,32 +78,41 @@
             Nouvelle partie
           </button>
         </div>
+
+        
+        <!-- afficcheur de score -->
         <div id="score-bar">
           <div class="pinfo" id="info-nord">
             <div class="pname">Joueur Nord</div>
             <div class="pscore" id="sc-nord">0</div>
             <div class="pturn" id="turn-nord">&nbsp;</div>
           </div>
-          <div id="turn-icon">⇅</div>
+          <div id="turn-icon">-</div>
           <div class="pinfo" id="info-sud">
             <div class="pname">Joueur Sud</div>
             <div class="pscore" id="sc-sud">0</div>
             <div class="pturn" id="turn-sud">&nbsp;</div>
           </div>
         </div>
+
+        <!-- plateau de jeu -->
         <div id="board-wrap">
           <div class="rlabel">Nord</div>
           <div class="row" id="row-nord"></div>
           <div class="bdiv"></div>
           <div class="row" id="row-sud"></div>
           <div class="rlabel" style="margin-top: 6px; margin-bottom: 0">
-            Sud 
+            Sud
           </div>
         </div>
+
+        <!-- bar de status -->
         <div id="status-bar">
           <div id="dot"></div>
           <div id="status-msg">Connexion...</div>
         </div>
+
+        <!-- historique de coups -->
         <div id="log-wrap">
           <h3>Historique</h3>
           <ul id="log-list"></ul>
