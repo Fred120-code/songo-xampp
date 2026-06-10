@@ -166,7 +166,8 @@ button.primary {
 }
 
 button.primary:hover {
-  background: #d0e7f8;
+  background: var(--seed-yellow-dark);
+  color: #ffff;
 }
 
 .code-display {

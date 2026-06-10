@@ -1,10 +1,7 @@
 <?php
 //toute la logique du jeu Songo
 
-
-
 //navigation 
-
 function ownRow(int $player): int { return $player === 1 ? 1 : 0; }
 function oppRow(int $player): int { return $player === 1 ? 0 : 1; }
 
@@ -34,7 +31,6 @@ function oppFirstCol(int $player): int { return $player === 1 ? 0 : 6; }
 
 
 //fonction utilitaires 
-
 function totalOnBoard(array $board): int {
     return array_sum($board[0]) + array_sum($board[1]);
 }
@@ -55,7 +51,6 @@ function simulateDistInOpp(array $board, int $col, int $player): int {
 }
 
 //permet de determiner les cases jouables
-
 function getSelectableCells(array $board, int $player): array {
     $own      = ownRow($player);
     $opp      = oppRow($player);
@@ -202,7 +197,6 @@ function checkEnd(array &$board, array &$scores, int $currentPlayer): ?array {
 }
 
 // etat retourné au client 
-
 function gameStateFor(array $game, int $playerNum): array {
     $board    = json_decode($game['board'], true);
     $scores   = json_decode($game['scores'], true);

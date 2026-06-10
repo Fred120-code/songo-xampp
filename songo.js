@@ -216,6 +216,7 @@ function renderScores(s) {
       : "À son tour"
     : "\u00a0";
 }
+
 function renderStatus(s) {
   const m = Q("status-msg");
   if (s.status !== "playing") return;
@@ -228,6 +229,7 @@ function renderStatus(s) {
     m.className = "waiting";
   }
 }
+
 function renderLog(log) {
   if (!log || log.length === lastLogCount) return;
   const list = Q("log-list");
@@ -259,6 +261,7 @@ async function sendMove(col) {
     setDot(false);
   }
 }
+
 function showEnd(result, scores) {
   Q("end-screen").style.display = "block";
   Q("es-nord").textContent = scores[0];
