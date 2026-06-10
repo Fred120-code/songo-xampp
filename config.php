@@ -1,12 +1,10 @@
 <?php
-// =============================================
-// config.php — Connexion MySQL
-// =============================================
+// permet la connexion à mysql
 
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'songo');
-define('DB_USER', 'root');      // Utilisateur XAMPP par défaut
-define('DB_PASS', '');          // Mot de passe vide par défaut sur XAMPP
+define('DB_USER', 'root');      
+define('DB_PASS', '');         P
 
 function getDB(): PDO {
     static $pdo = null;

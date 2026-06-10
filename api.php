@@ -1,7 +1,4 @@
 <?php
-// =============================================
-// api.php — Point d'entrée unique de l'API
-// =============================================
 
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/game.php';
@@ -131,8 +128,7 @@ function handleMove(string $gameId, string $token, int $col): void {
     }
 }
 
-// ── Utilitaires ───────────────────────────────────────────────────────
-
+//fonctions utilitaires 
 function resolvePlayer(array $row, string $token): int {
     if ($row['token_sud']  === $token) return 1;
     if ($row['token_nord'] === $token) return 2;
