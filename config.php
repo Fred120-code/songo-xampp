@@ -4,7 +4,7 @@
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'songo');
 define('DB_USER', 'root');      
-define('DB_PASS', '');         P
+define('DB_PASS', '');        
 
 function getDB(): PDO {
     static $pdo = null;

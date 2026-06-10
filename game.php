@@ -1,9 +1,9 @@
 <?php
-// =============================================
-// game.php — Toute la logique du jeu Songo
-// =============================================
+//toute la logique du jeu Songo
 
-// ── Navigation ────────────────────────────────────────────────────────
+
+
+//navigation 
 
 function ownRow(int $player): int { return $player === 1 ? 1 : 0; }
 function oppRow(int $player): int { return $player === 1 ? 0 : 1; }
@@ -30,7 +30,10 @@ function prevPos(int $row, int $col, int $player): array {
 
 function oppFirstCol(int $player): int { return $player === 1 ? 0 : 6; }
 
-// ── Utilitaires ───────────────────────────────────────────────────────
+
+
+
+//fonction utilitaires 
 
 function totalOnBoard(array $board): int {
     return array_sum($board[0]) + array_sum($board[1]);
@@ -51,7 +54,7 @@ function simulateDistInOpp(array $board, int $col, int $player): int {
     return $count;
 }
 
-// ── Cases jouables ────────────────────────────────────────────────────
+//permet de determiner les cases jouables
 
 function getSelectableCells(array $board, int $player): array {
     $own      = ownRow($player);
@@ -61,11 +64,11 @@ function getSelectableCells(array $board, int $player): array {
 
     if (!$oppEmpty) return $allOwn;
 
-    // Solidarité : coups qui distribuent ≥7 graines chez l'adversaire
+    // solidarité : coups qui distribuent >= 7 graines chez l'adversaire
     $reach7 = array_filter($allOwn, fn($c) => simulateDistInOpp($board, $c, $player) >= 7);
     if (count($reach7) > 0) return array_values($reach7);
 
-    // Sinon : coup qui distribue le maximum
+    // sinon : coup qui distribue le maximum
     $maxDist = 0;
     foreach ($allOwn as $c) {
         $d = simulateDistInOpp($board, $c, $player);
@@ -74,7 +77,7 @@ function getSelectableCells(array $board, int $player): array {
     return array_values(array_filter($allOwn, fn($c) => simulateDistInOpp($board, $c, $player) === $maxDist));
 }
 
-// ── Application d'un coup ─────────────────────────────────────────────
+// jouer un coup
 
 function applyMove(array &$board, array &$scores, int &$currentPlayer, array &$log, ?array &$highlight, int $col): array {
     $player = $currentPlayer;
@@ -89,7 +92,7 @@ function applyMove(array &$board, array &$scores, int &$currentPlayer, array &$l
     $seeds = $board[$own][$col];
     $board[$own][$col] = 0;
 
-    // Distribution
+    // distribution
     $row = $own; $c = $col; $s = $seeds;
     while ($s > 0) {
         [$row, $c] = nextPos($row, $c, $player);
@@ -99,7 +102,7 @@ function applyMove(array &$board, array &$scores, int &$currentPlayer, array &$l
     }
     $lastRow = $row; $lastCol = $c;
 
-    // Prises
+    // prises
     $captureList = [];
     $pr = $lastRow; $pc = $lastCol;
 
@@ -129,13 +132,13 @@ function applyMove(array &$board, array &$scores, int &$currentPlayer, array &$l
         }
     }
 
-    // Interdit : vider le camp adverse
+    // interdit de vider le camp adverse
     $wouldEmpty = count(array_filter($board[$opp], fn($x) => $x > 0)) === 0;
     $logMsg = null;
     if ($wouldEmpty && count($captureList) > 0) {
         foreach ($captureList as [$r, $c2, $cnt]) $board[$r][$c2] += $cnt;
         $captureList = [];
-        $logMsg = 'Interdit : vider le camp adverse. Aucune prise.';
+        $logMsg = 'interdit de  vider le camp adverse. Aucune prise.';
     }
 
     $totalCaptured = array_sum(array_column($captureList, 2));
@@ -146,8 +149,8 @@ function applyMove(array &$board, array &$scores, int &$currentPlayer, array &$l
     $playerName = $player === 1 ? 'Sud' : 'Nord';
     if (!$logMsg) {
         $logMsg = $totalCaptured > 0
-            ? "$playerName joue case $caseNum ($seeds gr.) → +$totalCaptured capturées."
-            : "$playerName joue case $caseNum ($seeds gr.) — aucune prise.";
+            ? "$playerName joue case $caseNum ($seeds gr.) → +$totalCaptured capturées"
+            : "$playerName joue case $caseNum ($seeds gr.) — aucune prise";
     }
 
     $log[] = $logMsg;
@@ -158,13 +161,13 @@ function applyMove(array &$board, array &$scores, int &$currentPlayer, array &$l
         'captured' => array_map(fn($x) => [$x[0], $x[1]], $captureList),
     ];
 
-    // Changer le joueur
+    // changer le joueur
     $currentPlayer = $player === 1 ? 2 : 1;
 
     return ['ok' => true];
 }
 
-// ── Fin de partie ─────────────────────────────────────────────────────
+//fin de la partie 
 
 function checkEnd(array &$board, array &$scores, int $currentPlayer): ?array {
     if ($scores[0] >= 40) return ['winner' => 2, 'reason' => 'score'];
@@ -198,7 +201,7 @@ function checkEnd(array &$board, array &$scores, int $currentPlayer): ?array {
     return null;
 }
 
-// ── État retourné au client ───────────────────────────────────────────
+// etat retourné au client 
 
 function gameStateFor(array $game, int $playerNum): array {
     $board    = json_decode($game['board'], true);

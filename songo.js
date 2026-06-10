@@ -6,9 +6,12 @@ let API = "http://localhost/songo/api.php",
   lastLogCount = 0,
   finished = false;
 const Q = (s) => document.getElementById(s);
+
 function apiUrl(a, p = "") {
   return `${API}?action=${a}${p}`;
 }
+
+//pemet de creer une partie
 async function createGame() {
   API = Q("api-url").value.trim();
   lobbyErr("");
@@ -34,6 +37,8 @@ async function createGame() {
     );
   }
 }
+
+//permet de rejoindre une partie grace à son code
 async function joinGame() {
   API = Q("api-url").value.trim();
   const code = Q("join-code").value.trim().toUpperCase();
@@ -62,15 +67,19 @@ async function joinGame() {
     lobbyErr("Impossible de contacter le serveur PHP.");
   }
 }
+
+//pemet de copier le code generé
 function copyCode() {
   const c = Q("game-code").textContent;
   navigator.clipboard.writeText(c).then(() => alert("Code copié : " + c));
 }
+
 function lobbyErr(m) {
   const e = Q("lobby-err");
   e.textContent = m;
   e.style.display = m ? "block" : "none";
 }
+
 function showGame() {
   Q("lobby").style.display = "none";
   Q("game").style.display = "block";
@@ -78,6 +87,7 @@ function showGame() {
   const n = Q(id).querySelector(".pname");
   if (!n.textContent.includes("(vous)")) n.textContent += " (vous)";
 }
+
 function backToLobby() {
   stopPoll();
   gameId = myToken = myPlayer = null;
@@ -92,17 +102,20 @@ function backToLobby() {
   Q("info-nord").querySelector(".pname").textContent = "Joueur Nord";
   Q("info-sud").querySelector(".pname").textContent = "Joueur Sud";
 }
+
 function startPoll() {
   if (pollTimer) clearInterval(pollTimer);
   poll();
   pollTimer = setInterval(poll, 2000);
 }
+
 function stopPoll() {
   if (pollTimer) {
     clearInterval(pollTimer);
     pollTimer = null;
   }
 }
+
 async function poll() {
   if (!gameId || !myToken) return;
   try {
@@ -119,9 +132,11 @@ async function poll() {
     setDot(false);
   }
 }
+
 function setDot(on) {
   Q("dot").classList.toggle("off", !on);
 }
+
 function handle(s) {
   if (s.status === "waiting") return;
   if (Q("lobby").style.display !== "none") showGame();
@@ -135,6 +150,7 @@ function handle(s) {
     stopPoll();
   }
 }
+
 function renderBoard(s) {
   const hl = s.highlight || { last: null, captured: [] };
   const myOwn = s.myPlayer === 1 ? 1 : 0;
@@ -181,6 +197,7 @@ function renderBoard(s) {
     }
   }
 }
+
 function renderScores(s) {
   Q("sc-nord").textContent = s.scores[0];
   Q("sc-sud").textContent = s.scores[1];

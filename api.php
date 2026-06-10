@@ -10,7 +10,7 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
-// Nettoyage automatique ~5% des requêtes
+// nettoyage automatique des requêtes
 if (rand(1, 20) === 1) cleanOldGames();
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -28,7 +28,7 @@ switch ("$method:$action") {
     default: http_response_code(404); echo json_encode(['error' => 'Route inconnue']);        break;
 }
 
-// ── Handlers ──────────────────────────────────────────────────────────
+//handlers
 
 function createGame(): void {
     $db       = getDB();
