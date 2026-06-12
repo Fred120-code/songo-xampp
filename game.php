@@ -59,11 +59,11 @@ function getSelectableCells(array $board, int $player): array {
 
     if (!$oppEmpty) return $allOwn;
 
-    // solidarité : coups qui distribuent >= 7 graines chez l'adversaire
+    // solidarité, coups qui distribuent >= 7 graines chez l'adversaire
     $reach7 = array_filter($allOwn, fn($c) => simulateDistInOpp($board, $c, $player) >= 7);
     if (count($reach7) > 0) return array_values($reach7);
 
-    // sinon : coup qui distribue le maximum
+    // sinon, coup qui distribue le maximum
     $maxDist = 0;
     foreach ($allOwn as $c) {
         $d = simulateDistInOpp($board, $c, $player);
@@ -73,7 +73,6 @@ function getSelectableCells(array $board, int $player): array {
 }
 
 // jouer un coup
-
 function applyMove(array &$board, array &$scores, int &$currentPlayer, array &$log, ?array &$highlight, int $col): array {
     $player = $currentPlayer;
     $own    = ownRow($player);
@@ -86,6 +85,7 @@ function applyMove(array &$board, array &$scores, int &$currentPlayer, array &$l
 
     $seeds = $board[$own][$col];
     $board[$own][$col] = 0;
+    $distributionPath = [];
 
     // distribution
     $row = $own; $c = $col; $s = $seeds;
@@ -93,6 +93,7 @@ function applyMove(array &$board, array &$scores, int &$currentPlayer, array &$l
         [$row, $c] = nextPos($row, $c, $player);
         if ($row === $own && $c === $col && $seeds > 13) { $s--; continue; }
         $board[$row][$c]++;
+        $distributionPath[] = [$row, $c];
         $s--;
     }
     $lastRow = $row; $lastCol = $c;
@@ -159,7 +160,11 @@ function applyMove(array &$board, array &$scores, int &$currentPlayer, array &$l
     // changer le joueur
     $currentPlayer = $player === 1 ? 2 : 1;
 
-    return ['ok' => true];
+    return [
+        'ok' => true,
+        'distributionPath' => $distributionPath,
+        'captureList' => $captureList
+        ];
 }
 
 //fin de la partie 

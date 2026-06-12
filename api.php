@@ -95,6 +95,9 @@ function handleMove(string $gameId, string $token, int $col): void {
         $board   = json_decode($row['board'],  true);
         $scores  = json_decode($row['scores'], true);
         $log     = json_decode($row['log'],    true);
+
+        $beforeBoard = $board; //etat precedent du tableau
+
         $hl      = null;
         $current = (int)$row['current_player'];
 
@@ -121,7 +124,14 @@ function handleMove(string $gameId, string $token, int $col): void {
 
         $stmt2 = $db->prepare("SELECT * FROM games WHERE id=:id");
         $stmt2->execute(['id' => $gameId]);
-        echo json_encode(gameStateFor($stmt2->fetch(), $p));
+
+        $state = gameStateFor($stmt2->fetch(), $p);
+        
+        $state['distributionPath'] = $res['distributionPath'];
+        $state['beforeBoard'] = $beforeBoard;
+        $state['playedCol'] = $col;
+
+        echo json_encode($state);
     } catch (Exception $e) {
         $db->rollBack();
         apiError(500, 'Erreur serveur');
