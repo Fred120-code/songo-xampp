@@ -1,6 +1,5 @@
 <?php
 // permet la connexion à mysql
-
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'songo');
 define('DB_USER', 'root');      

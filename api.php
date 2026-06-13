@@ -49,6 +49,7 @@ function createGame(): void {
     echo json_encode(['gameId' => $gameId, 'code' => $code, 'token' => $tokenSud, 'playerNum' => 1]);
 }
 
+//functi pour rejoindre une partie
 function joinGame(string $code): void {
     if (!$code) { apiError(400, 'Code manquant'); return; }
     $db   = getDB();
@@ -66,6 +67,7 @@ function joinGame(string $code): void {
     echo json_encode(['gameId' => $row['id'], 'code' => $row['code'], 'token' => $tokenNord, 'playerNum' => 2]);
 }
 
+//renvoi l'etat d'une partie
 function getState(string $gameId, string $token): void {
     if (!$gameId || !$token) { apiError(400, 'Paramètres manquants'); return; }
     $db   = getDB();
@@ -78,6 +80,9 @@ function getState(string $gameId, string $token): void {
     echo json_encode(gameStateFor($row, $p));
 }
 
+
+//fais une requeste pour le deplacement et renvoi l ancien tableau, la liste de distribution
+//et le nouveau tableau
 function handleMove(string $gameId, string $token, int $col): void {
     if (!$gameId || !$token || $col < 0) { apiError(400, 'Paramètres manquants'); return; }
     $db = getDB();
@@ -95,6 +100,9 @@ function handleMove(string $gameId, string $token, int $col): void {
         $board   = json_decode($row['board'],  true);
         $scores  = json_decode($row['scores'], true);
         $log     = json_decode($row['log'],    true);
+
+        $beforeBoard = $board; //etat precedent du tableau
+
         $hl      = null;
         $current = (int)$row['current_player'];
 
@@ -121,7 +129,14 @@ function handleMove(string $gameId, string $token, int $col): void {
 
         $stmt2 = $db->prepare("SELECT * FROM games WHERE id=:id");
         $stmt2->execute(['id' => $gameId]);
-        echo json_encode(gameStateFor($stmt2->fetch(), $p));
+
+        $state = gameStateFor($stmt2->fetch(), $p);
+        
+        $state['distributionPath'] = $res['distributionPath'];
+        $state['beforeBoard'] = $beforeBoard;
+        $state['playedCol'] = $col;
+
+        echo json_encode($state);
     } catch (Exception $e) {
         $db->rollBack();
         apiError(500, 'Erreur serveur');
@@ -135,11 +150,13 @@ function resolvePlayer(array $row, string $token): int {
     return 0;
 }
 
+//supprime les anciennes parties si elles sont innactives depuis plus de 2h 
 function cleanOldGames(): void {
     try { getDB()->exec("DELETE FROM games WHERE last_activity < DATE_SUB(NOW(), INTERVAL 2 HOUR)"); }
     catch (Exception $e) {}
 }
 
+//permet de genrer l'id de la partie
 function generateUUID(): string {
     return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
         mt_rand(0,0xffff), mt_rand(0,0xffff), mt_rand(0,0xffff),
@@ -147,6 +164,7 @@ function generateUUID(): string {
         mt_rand(0,0xffff), mt_rand(0,0xffff), mt_rand(0,0xffff));
 }
 
+//permet de generer le code de la partie à envoyer
 function generateCode(PDO $db): string {
     do {
         $code = strtoupper(substr(str_shuffle('ABCDEFGHJKLMNPQRSTUVWXYZ23456789'), 0, 6));

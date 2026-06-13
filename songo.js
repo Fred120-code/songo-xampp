@@ -2,13 +2,53 @@ let API = "http://localhost/songo/api.php",
   gameId,
   myToken,
   myPlayer,
+  animating = false,
   pollTimer = null,
   lastLogCount = 0,
   finished = false;
 const Q = (s) => document.getElementById(s);
 
+//pour l'audio
+const seedSound = new AudioContext();
+
+const seedSong = new Audio("close_001.ogg");
+seedSong.volume = 0.4;
+
+ function jouersoung() {
+  const son = seedSong.cloneNode();
+  son.volume = 0.4;
+  son.play().catch(() => {});
+}
+
 function apiUrl(a, p = "") {
   return `${API}?action=${a}${p}`;
+}
+
+//timer
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+//fonction de l'animationde la distribution
+async function animateMove(state, distributionPath) {
+  animating = true;
+  const tempBoard = JSON.parse(JSON.stringify(state.beforeBoard));
+  const ownRow = state.myPlayer === 1 ? 1 : 0;
+  const playedCol = state.playedCol;
+  tempBoard[ownRow][playedCol] = 0;
+
+  for (const [r, c] of distributionPath) {
+    tempBoard[r][c]++;
+
+    renderBoard({
+      ...state,
+      board: tempBoard,
+      highlight: null,
+    });
+    await jouersoung();
+    await sleep(400);
+  }
+  animating = false;
 }
 
 //pemet de creer une partie
@@ -103,6 +143,7 @@ function backToLobby() {
   Q("info-sud").querySelector(".pname").textContent = "Joueur Sud";
 }
 
+//commencer le poll
 function startPoll() {
   if (pollTimer) clearInterval(pollTimer);
   poll();
@@ -116,7 +157,9 @@ function stopPoll() {
   }
 }
 
+//fait des apples à l'api pour avoir l'etat du plateau
 async function poll() {
+  if (animating) return;
   if (!gameId || !myToken) return;
   try {
     const r = await fetch(
@@ -241,7 +284,13 @@ function renderLog(log) {
   lastLogCount = log.length;
   list.scrollTop = list.scrollHeight;
 }
+
 async function sendMove(col) {
+  if (contexteAudio.state === "suspended") {
+    await contexteAudio.resume();
+  }
+
+  if (animating) return; //on ne joue pas pendant l'animation
   if (!gameId || !myToken) return;
   try {
     const r = await fetch(apiUrl("move"), {
@@ -249,13 +298,26 @@ async function sendMove(col) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ gameId, token: myToken, col }),
     });
+
     const d = await r.json();
+    console.log(d);
+
     if (!r.ok) {
       const m = Q("status-msg");
       m.textContent = d.error || "Coup invalide";
       m.className = "warn";
       return;
     }
+
+    if (d.distributionPath) {
+      await animateMove(d, d.distributionPath);
+      // const currentState = await fetch(
+      //   apiUrl("state", `&gameId=${gameId}&token=${myToken}`),
+      // ).then((r) => r.json());
+
+      // await animateMove(currentState, d.distributionPath);
+    }
+
     handle(d);
   } catch {
     setDot(false);
