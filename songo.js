@@ -8,6 +8,18 @@ let API = "http://localhost/songo/api.php",
   finished = false;
 const Q = (s) => document.getElementById(s);
 
+//pour l'audio
+const seedSound = new AudioContext();
+
+const seedSong = new Audio("close_001.ogg");
+seedSong.volume = 0.4;
+
+ function jouersoung() {
+  const son = seedSong.cloneNode();
+  son.volume = 0.4;
+  son.play().catch(() => {});
+}
+
 function apiUrl(a, p = "") {
   return `${API}?action=${a}${p}`;
 }
@@ -22,7 +34,7 @@ async function animateMove(state, distributionPath) {
   animating = true;
   const tempBoard = JSON.parse(JSON.stringify(state.beforeBoard));
   const ownRow = state.myPlayer === 1 ? 1 : 0;
-  const playedCol = state.playedCol; //il manque encore playedCol
+  const playedCol = state.playedCol;
   tempBoard[ownRow][playedCol] = 0;
 
   for (const [r, c] of distributionPath) {
@@ -33,7 +45,7 @@ async function animateMove(state, distributionPath) {
       board: tempBoard,
       highlight: null,
     });
-
+    await jouersoung();
     await sleep(400);
   }
   animating = false;
@@ -131,6 +143,7 @@ function backToLobby() {
   Q("info-sud").querySelector(".pname").textContent = "Joueur Sud";
 }
 
+//commencer le poll
 function startPoll() {
   if (pollTimer) clearInterval(pollTimer);
   poll();
@@ -144,6 +157,7 @@ function stopPoll() {
   }
 }
 
+//fait des apples à l'api pour avoir l'etat du plateau
 async function poll() {
   if (animating) return;
   if (!gameId || !myToken) return;
@@ -272,6 +286,10 @@ function renderLog(log) {
 }
 
 async function sendMove(col) {
+  if (contexteAudio.state === "suspended") {
+    await contexteAudio.resume();
+  }
+
   if (animating) return; //on ne joue pas pendant l'animation
   if (!gameId || !myToken) return;
   try {
