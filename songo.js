@@ -8,17 +8,59 @@ let API = "http://localhost/songo/api.php",
   finished = false;
 const Q = (s) => document.getElementById(s);
 
-//pour l'audio
-const seedSound = new AudioContext();
+//audio
+let audioCtx = null;
 
-const seedSong = new Audio("close_001.ogg");
-seedSong.volume = 0.4;
-
- function jouersoung() {
-  const son = seedSong.cloneNode();
-  son.volume = 0.4;
-  son.play().catch(() => {});
+function getAudioCtx() {
+  if (!audioCtx)
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
 }
+
+function playDropSound() {
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(320, now);
+    osc.frequency.exponentialRampToValueAtTime(120, now + 0.06);
+    filter.type = "bandpass";
+    filter.frequency.value = 400;
+    filter.Q.value = 1.5;
+    gain.gain.setValueAtTime(0.5, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.13);
+  } catch (e) {}
+}
+
+function playCaptureSound() {
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(60, now + 0.18);
+    gain.gain.setValueAtTime(0.6, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.21);
+  } catch (e) {}
+}
+
+// Déverrouiller l'audio dès le premier clic (obligatoire sur mobile)
+document.addEventListener("click", () => getAudioCtx(), { once: true });
 
 function apiUrl(a, p = "") {
   return `${API}?action=${a}${p}`;
@@ -45,8 +87,14 @@ async function animateMove(state, distributionPath) {
       board: tempBoard,
       highlight: null,
     });
-    await jouersoung();
+
+    playDropSound();
     await sleep(400);
+  }
+
+  // Son de capture à la fin
+  if (state.highlight?.captured?.length > 0) {
+    playCaptureSound();
   }
   animating = false;
 }
@@ -147,7 +195,7 @@ function backToLobby() {
 function startPoll() {
   if (pollTimer) clearInterval(pollTimer);
   poll();
-  pollTimer = setInterval(poll, 2000);
+  pollTimer = setInterval(poll, 4000);
 }
 
 function stopPoll() {
@@ -286,10 +334,6 @@ function renderLog(log) {
 }
 
 async function sendMove(col) {
-  if (contexteAudio.state === "suspended") {
-    await contexteAudio.resume();
-  }
-
   if (animating) return; //on ne joue pas pendant l'animation
   if (!gameId || !myToken) return;
   try {
